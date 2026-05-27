@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ClipboardList, Plus, Globe, Trash2, Eye, Search, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { ClipboardList, Plus, Globe, Eye, Search, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { getAssignments, createAssignment, updateAssignment, deleteAssignment, getClasses, getSubmissions } from '../lib/api'
 import { Loader, StatusBadge, Alert, Modal, EmptyState } from '../components/UI'
 
@@ -86,6 +86,11 @@ export default function AdminAssignments() {
       })
       setSuccess('Ujian berhasil dibuat!')
       setShowCreate(false)
+      setForm({
+        title: '', classRoomIds: [], startAt: '', endAt: '',
+        duration: 60, passingScore: 70, shuffleQuestions: true, showResult: true,
+        questions: [{ ...EMPTY_QUESTION }],
+      })
       load()
       setTimeout(() => setSuccess(''), 3000)
     } catch (e) {
@@ -99,18 +104,6 @@ export default function AdminAssignments() {
     try {
       await updateAssignment(id, { status: 'published' })
       setSuccess('Ujian dipublish!')
-      load()
-      setTimeout(() => setSuccess(''), 3000)
-    } catch (e) {
-      setError(e.message)
-    }
-  }
-
-  async function handleDelete(id) {
-    if (!confirm('Hapus ujian ini?')) return
-    try {
-      await deleteAssignment(id)
-      setSuccess('Ujian dihapus')
       load()
       setTimeout(() => setSuccess(''), 3000)
     } catch (e) {
@@ -155,34 +148,40 @@ export default function AdminAssignments() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filtered.map(a => (
             <div key={a._id} className="neo-card">
-              <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-                    <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem' }}>{a.title}</h3>
-                    <StatusBadge status={a.status} />
+              {/* Card Header */}
+              <div style={{ padding: '14px 16px' }}>
+                {/* Title row */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                      <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem', wordBreak: 'break-word' }}>{a.title}</h3>
+                      <StatusBadge status={a.status} />
+                    </div>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, lineHeight: 1.6 }}>
+                      {a.classRooms?.map(c => c.name).join(', ')} · {a.duration} menit · {a.totalPoints} poin · s/d {formatDate(a.endAt)}
+                    </p>
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>
-                    {a.classRooms?.map(c => c.name).join(', ')} · {a.duration} menit · {a.totalPoints} poin · s/d {formatDate(a.endAt)}
-                  </p>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {/* Buttons row */}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   {a.status === 'draft' && (
-                    <button className="neo-btn neo-btn-green" onClick={() => handlePublish(a._id)} style={{ padding: '7px 12px', fontSize: '0.75rem' }}>
-                      <Globe size={14} /> Publish
+                    <button className="neo-btn neo-btn-green" onClick={() => handlePublish(a._id)} style={{ padding: '6px 10px', fontSize: '0.72rem' }}>
+                      <Globe size={13} /> Publish
                     </button>
                   )}
-                  <button className="neo-btn neo-btn-ghost" onClick={() => openRecap(a)} style={{ padding: '7px 12px', fontSize: '0.75rem' }}>
-                    <Eye size={14} /> Rekap
+                  <button className="neo-btn neo-btn-ghost" onClick={() => openRecap(a)} style={{ padding: '6px 10px', fontSize: '0.72rem' }}>
+                    <Eye size={13} /> Rekap
                   </button>
-
-                  <button className="neo-btn neo-btn-ghost" onClick={() => setExpanded(expanded === a._id ? null : a._id)} style={{ padding: '7px 10px', fontSize: '0.75rem' }}>
-                    {expanded === a._id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  <button className="neo-btn neo-btn-ghost" onClick={() => setExpanded(expanded === a._id ? null : a._id)} style={{ padding: '6px 8px', fontSize: '0.72rem', marginLeft: 'auto' }}>
+                    {expanded === a._id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                   </button>
                 </div>
               </div>
+
+              {/* Expanded detail */}
               {expanded === a._id && (
-                <div style={{ borderTop: '2px dashed #e0e0e0', padding: '14px 20px', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: 24, flexWrap: 'wrap', fontWeight: 700, alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                <div style={{ borderTop: '2px dashed #e0e0e0', padding: '12px 16px', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', lineHeight: 2 }}>
                     <span>📅 Mulai: {formatDate(a.startAt)}</span>
                     <span>🏁 Berakhir: {formatDate(a.endAt)}</span>
                     <span>🎯 KKM: {a.passingScore}%</span>
@@ -190,9 +189,6 @@ export default function AdminAssignments() {
                     <span>👁 Tampil Hasil: {a.showResult ? 'Ya' : 'Tidak'}</span>
                     <span>🔄 Max Attempt: {a.maxAttempts}</span>
                   </div>
-                  <button className="neo-btn neo-btn-danger" onClick={() => handleDelete(a._id)} style={{ padding: '6px 12px', fontSize: '0.75rem', marginLeft: 'auto' }}>
-                    <Trash2 size={14} /> Hapus Ujian
-                  </button>
                 </div>
               )}
             </div>
@@ -201,111 +197,138 @@ export default function AdminAssignments() {
       )}
 
       {/* Create Modal */}
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Buat Ujian Baru">
-        <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: 4 }}>
-          {error && <Alert type="error">{error}</Alert>}
-          <form onSubmit={handleCreate}>
-            <div className="form-group">
-              <label className="form-label">Judul Ujian</label>
-              <input className="neo-input" value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="UTS Matematika..." required />
-            </div>
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">Durasi (menit)</label>
-                <input className="neo-input" type="number" value={form.duration} onChange={e => updateForm('duration', e.target.value)} min={5} required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">KKM (%)</label>
-                <input className="neo-input" type="number" value={form.passingScore} onChange={e => updateForm('passingScore', e.target.value)} min={0} max={100} required />
-              </div>
-            </div>
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">Mulai</label>
-                <input className="neo-input" type="datetime-local" value={form.startAt} onChange={e => updateForm('startAt', e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Selesai</label>
-                <input className="neo-input" type="datetime-local" value={form.endAt} onChange={e => updateForm('endAt', e.target.value)} required />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Kelas</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, border: '2px solid var(--border)', borderRadius: 4, padding: 10 }}>
-                {classes.map(c => (
-                  <label key={c._id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
-                    <input type="checkbox"
-                      checked={form.classRoomIds.includes(c._id)}
-                      onChange={e => {
-                        updateForm('classRoomIds', e.target.checked
-                          ? [...form.classRoomIds, c._id]
-                          : form.classRoomIds.filter(x => x !== c._id))
-                      }} />
-                    {c.name}
-                  </label>
-                ))}
-              </div>
+      {showCreate && (
+        <div className="modal-overlay" onClick={() => setShowCreate(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'var(--card)',
+            border: '3px solid var(--border)',
+            boxShadow: '8px 8px 0 var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '24px',
+            width: '100%',
+            maxWidth: '640px',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'fadeUp 0.25s ease',
+          }}>
+            {/* Modal header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '2px dashed #e0e0e0', flexShrink: 0 }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem' }}>Buat Ujian Baru</h2>
+              <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-muted)' }}>✕</button>
             </div>
 
-            {/* Questions */}
-            <div style={{ marginTop: 8, marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <p style={{ fontWeight: 700, fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Soal ({form.questions.length})</p>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" className="neo-btn neo-btn-dark" onClick={() => addQuestion('multiple_choice')} style={{ padding: '5px 10px', fontSize: '0.72rem' }}>
-                    + Pilihan Ganda
-                  </button>
-                  <button type="button" className="neo-btn neo-btn-ghost" onClick={() => addQuestion('essay')} style={{ padding: '5px 10px', fontSize: '0.72rem' }}>
-                    + Essay
-                  </button>
+            {/* Scrollable body */}
+            <div style={{ overflowY: 'auto', flex: 1, paddingRight: 4 }}>
+              {error && <Alert type="error">{error}</Alert>}
+              <form onSubmit={handleCreate}>
+                <div className="form-group">
+                  <label className="form-label">Judul Ujian</label>
+                  <input className="neo-input" value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="UTS Matematika..." required />
                 </div>
-              </div>
-              {form.questions.map((q, i) => (
-                <div key={i} style={{ border: '2px solid var(--border)', borderRadius: 4, padding: 14, marginBottom: 12, background: 'var(--bg)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.78rem', background: q.type === 'essay' ? '#e0e0e0' : 'var(--accent-yellow)', border: '2px solid var(--border)', borderRadius: 2, padding: '3px 8px' }}>
-                      {i + 1}. {q.type === 'essay' ? 'Essay' : 'Pilihan Ganda'}
-                    </span>
-                    <button type="button" onClick={() => removeQuestion(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cc0000' }}>
-                      <X size={16} />
-                    </button>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Durasi (menit)</label>
+                    <input className="neo-input" type="number" value={form.duration} onChange={e => updateForm('duration', e.target.value)} min={5} required />
                   </div>
-                  <textarea className="neo-input" rows={2} placeholder="Pertanyaan..." value={q.content}
-                    onChange={e => updateQuestion(i, 'content', e.target.value)} required
-                    style={{ marginBottom: 8, fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>Poin:</label>
-                    <input className="neo-input" type="number" value={q.points} min={1}
-                      onChange={e => updateQuestion(i, 'points', Number(e.target.value))}
-                      style={{ width: 70 }} />
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">KKM (%)</label>
+                    <input className="neo-input" type="number" value={form.passingScore} onChange={e => updateForm('passingScore', e.target.value)} min={0} max={100} required />
                   </div>
-                  {q.type === 'multiple_choice' && (
-                    <>
-                      {q.choices.map((c, ci) => (
-                        <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                          <span style={{ width: 24, height: 24, border: '2px solid var(--border)', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.75rem', flexShrink: 0, background: 'var(--card)' }}>{c.key}</span>
-                          <input className="neo-input" placeholder={`Pilihan ${c.key}`} value={c.text}
-                            onChange={e => updateChoice(i, ci, e.target.value)} />
-                        </div>
-                      ))}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>Jawaban Benar:</label>
-                        <select className="neo-input" value={q.correctKey} onChange={e => updateQuestion(i, 'correctKey', e.target.value)} style={{ width: 80 }}>
-                          {q.choices.map(c => <option key={c.key} value={c.key}>{c.key}</option>)}
-                        </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Mulai</label>
+                    <input className="neo-input" type="datetime-local" value={form.startAt} onChange={e => updateForm('startAt', e.target.value)} required />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Selesai</label>
+                    <input className="neo-input" type="datetime-local" value={form.endAt} onChange={e => updateForm('endAt', e.target.value)} required />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Kelas</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, border: '2px solid var(--border)', borderRadius: 4, padding: 10 }}>
+                    {classes.map(c => (
+                      <label key={c._id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', padding: '4px 8px', border: '2px solid var(--border)', borderRadius: 4, background: form.classRoomIds.includes(c._id) ? 'var(--accent-yellow)' : 'var(--bg)' }}>
+                        <input type="checkbox"
+                          style={{ display: 'none' }}
+                          checked={form.classRoomIds.includes(c._id)}
+                          onChange={e => {
+                            updateForm('classRoomIds', e.target.checked
+                              ? [...form.classRoomIds, c._id]
+                              : form.classRoomIds.filter(x => x !== c._id))
+                          }} />
+                        {c.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Questions */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <p style={{ fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Soal ({form.questions.length})</p>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button type="button" className="neo-btn neo-btn-dark" onClick={() => addQuestion('multiple_choice')} style={{ padding: '5px 8px', fontSize: '0.7rem' }}>
+                        + Pilihan Ganda
+                      </button>
+                      <button type="button" className="neo-btn neo-btn-ghost" onClick={() => addQuestion('essay')} style={{ padding: '5px 8px', fontSize: '0.7rem' }}>
+                        + Essay
+                      </button>
+                    </div>
+                  </div>
+                  {form.questions.map((q, i) => (
+                    <div key={i} style={{ border: '2px solid var(--border)', borderRadius: 4, padding: 12, marginBottom: 10, background: 'var(--bg)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.75rem', background: q.type === 'essay' ? '#e0e0e0' : 'var(--accent-yellow)', border: '2px solid var(--border)', borderRadius: 2, padding: '3px 8px' }}>
+                          {i + 1}. {q.type === 'essay' ? 'Essay' : 'Pilihan Ganda'}
+                        </span>
+                        <button type="button" onClick={() => removeQuestion(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cc0000' }}>
+                          <X size={16} />
+                        </button>
                       </div>
-                    </>
-                  )}
+                      <textarea className="neo-input" rows={2} placeholder="Pertanyaan..." value={q.content}
+                        onChange={e => updateQuestion(i, 'content', e.target.value)} required
+                        style={{ marginBottom: 8, fontFamily: 'var(--font-mono)', fontSize: '0.82rem' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Poin:</label>
+                        <input className="neo-input" type="number" value={q.points} min={1}
+                          onChange={e => updateQuestion(i, 'points', Number(e.target.value))}
+                          style={{ width: 70 }} />
+                      </div>
+                      {q.type === 'multiple_choice' && (
+                        <>
+                          {q.choices.map((c, ci) => (
+                            <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                              <span style={{ width: 24, height: 24, border: '2px solid var(--border)', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0, background: 'var(--card)' }}>{c.key}</span>
+                              <input className="neo-input" placeholder={`Pilihan ${c.key}`} value={c.text}
+                                onChange={e => updateChoice(i, ci, e.target.value)} />
+                            </div>
+                          ))}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                            <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Jawaban Benar:</label>
+                            <select className="neo-input" value={q.correctKey} onChange={e => updateQuestion(i, 'correctKey', e.target.value)} style={{ width: 80 }}>
+                              {q.choices.map(c => <option key={c.key} value={c.key}>{c.key}</option>)}
+                            </select>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <button type="submit" className="neo-btn neo-btn-primary" disabled={saving} style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}>
-              {saving ? 'Menyimpan...' : <><Plus size={16} /> Buat Ujian</>}
-            </button>
-          </form>
+                <button type="submit" className="neo-btn neo-btn-primary" disabled={saving} style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}>
+                  {saving ? 'Menyimpan...' : <><Plus size={16} /> Buat Ujian</>}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
-      </Modal>
+      )}
 
       {/* Recap Modal */}
       <Modal open={!!recapModal} onClose={() => { setRecapModal(null); setRecap(null) }} title={`Rekap: ${recapModal?.title || ''}`}>
