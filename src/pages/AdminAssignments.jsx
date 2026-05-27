@@ -7,20 +7,7 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const EMPTY_QUESTION = { 
-  type: 'multiple_choice', 
-  orderNumber: 1, 
-  content: '', 
-  choices: [
-    { key: 'A', text: '' }, 
-    { key: 'B', text: '' }, 
-    { key: 'C', text: '' }, 
-    { key: 'D', text: '' }
-  ], 
-  correctKey: 'A', 
-  points: 5 
-}
-
+const EMPTY_QUESTION = { type: 'multiple_choice', orderNumber: 1, content: '', choices: [{ key: 'A', text: '' }, { key: 'B', text: '' }, { key: 'C', text: '' }, { key: 'D', text: '' }], correctKey: 'A', points: 5 }
 const EMPTY_ESSAY = { type: 'essay', orderNumber: 1, content: '', points: 10 }
 
 export default function AdminAssignments() {
@@ -37,14 +24,8 @@ export default function AdminAssignments() {
   const [expanded, setExpanded] = useState(null)
 
   const [form, setForm] = useState({
-    title: '', 
-    classRoomIds: [], 
-    startAt: '', 
-    endAt: '',
-    duration: 60, 
-    passingScore: 70, 
-    shuffleQuestions: true, 
-    showResult: true,
+    title: '', classRoomIds: [], startAt: '', endAt: '',
+    duration: 60, passingScore: 70, shuffleQuestions: true, showResult: true,
     questions: [{ ...EMPTY_QUESTION }],
   })
 
@@ -61,17 +42,12 @@ export default function AdminAssignments() {
       .finally(() => setLoading(false))
   }
 
-  function updateForm(k, v) { 
-    setForm(p => ({ ...p, [k]: v })) 
-  }
+  function updateForm(k, v) { setForm(p => ({ ...p, [k]: v })) }
 
   function addQuestion(type) {
     const q = type === 'essay' ? { ...EMPTY_ESSAY } : { ...EMPTY_QUESTION }
     q.orderNumber = form.questions.length + 1
-    setForm(p => ({ 
-      ...p, 
-      questions: [...p.questions, { ...q }] 
-    }))
+    setForm(p => ({ ...p, questions: [...p.questions, { ...q }] }))
   }
 
   function updateQuestion(i, k, v) {
@@ -93,10 +69,7 @@ export default function AdminAssignments() {
   }
 
   function removeQuestion(i) {
-    setForm(p => ({ 
-      ...p, 
-      questions: p.questions.filter((_, idx) => idx !== i) 
-    }))
+    setForm(p => ({ ...p, questions: p.questions.filter((_, idx) => idx !== i) }))
   }
 
   async function handleCreate(e) {
@@ -172,53 +145,54 @@ export default function AdminAssignments() {
       {success && <Alert type="success">{success}</Alert>}
 
       {/* Search */}
-      <div style={{ position: 'relative', marginBottom: 20, maxWidth: 320 }}>
+      <div style={{ position: 'relative', marginBottom: 16, maxWidth: 300 }}>
         <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-        <input 
-          className="neo-input" 
-          placeholder="Cari ujian..." 
-          value={search}
-          onChange={e => setSearch(e.target.value)} 
-          style={{ paddingLeft: 40 }} 
-        />
+        <input className="neo-input" placeholder="Cari ujian..." value={search}
+          onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 36 }} />
       </div>
 
       {loading ? <Loader /> : filtered.length === 0 ? <EmptyState icon={ClipboardList} message="Belum ada ujian" /> : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filtered.map(a => (
             <div key={a._id} className="neo-card">
-              <div style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                <div style={{ flex: 1, minWidth: 220 }}>
+              <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-                    <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1rem' }}>{a.title}</h3>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem' }}>{a.title}</h3>
                     <StatusBadge status={a.status} />
                   </div>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700 }}>
-                    {a.classRooms?.map(c => c.name).join(', ')} • {a.duration} menit • {a.totalPoints} poin
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>
+                    {a.classRooms?.map(c => c.name).join(', ')} · {a.duration} menit · {a.totalPoints} poin · s/d {formatDate(a.endAt)}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {a.status === 'draft' && (
-                    <button className="neo-btn neo-btn-green" onClick={() => handlePublish(a._id)} style={{ padding: '8px 14px', fontSize: '0.8rem' }}>
-                      <Globe size={15} /> Publish
+                    <button className="neo-btn neo-btn-green" onClick={() => handlePublish(a._id)} style={{ padding: '7px 12px', fontSize: '0.75rem' }}>
+                      <Globe size={14} /> Publish
                     </button>
                   )}
-                  <button className="neo-btn neo-btn-ghost" onClick={() => openRecap(a)} style={{ padding: '8px 14px', fontSize: '0.8rem' }}>
-                    <Eye size={15} /> Rekap
+                  <button className="neo-btn neo-btn-ghost" onClick={() => openRecap(a)} style={{ padding: '7px 12px', fontSize: '0.75rem' }}>
+                    <Eye size={14} /> Rekap
                   </button>
-                  <button className="neo-btn neo-btn-ghost" onClick={() => setExpanded(expanded === a._id ? null : a._id)} style={{ padding: '8px 10px', fontSize: '0.8rem' }}>
-                    {expanded === a._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+
+                  <button className="neo-btn neo-btn-ghost" onClick={() => setExpanded(expanded === a._id ? null : a._id)} style={{ padding: '7px 10px', fontSize: '0.75rem' }}>
+                    {expanded === a._id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </button>
                 </div>
               </div>
-
               {expanded === a._id && (
-                <div className="expanded-info">
-                  <span>📅 Mulai: {formatDate(a.startAt)}</span>
-                  <span>🏁 Berakhir: {formatDate(a.endAt)}</span>
-                  <span>🎯 KKM: {a.passingScore}%</span>
-                  <span>🔀 Acak: {a.shuffleQuestions ? 'Ya' : 'Tidak'}</span>
-                  <span>👁 Hasil: {a.showResult ? 'Ya' : 'Tidak'}</span>
+                <div style={{ borderTop: '2px dashed #e0e0e0', padding: '14px 20px', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: 24, flexWrap: 'wrap', fontWeight: 700, alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                    <span>📅 Mulai: {formatDate(a.startAt)}</span>
+                    <span>🏁 Berakhir: {formatDate(a.endAt)}</span>
+                    <span>🎯 KKM: {a.passingScore}%</span>
+                    <span>🔀 Acak: {a.shuffleQuestions ? 'Ya' : 'Tidak'}</span>
+                    <span>👁 Tampil Hasil: {a.showResult ? 'Ya' : 'Tidak'}</span>
+                    <span>🔄 Max Attempt: {a.maxAttempts}</span>
+                  </div>
+                  <button className="neo-btn neo-btn-danger" onClick={() => handleDelete(a._id)} style={{ padding: '6px 12px', fontSize: '0.75rem', marginLeft: 'auto' }}>
+                    <Trash2 size={14} /> Hapus Ujian
+                  </button>
                 </div>
               )}
             </div>
@@ -226,127 +200,97 @@ export default function AdminAssignments() {
         </div>
       )}
 
-      {/* ==================== CREATE MODAL ==================== */}
+      {/* Create Modal */}
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Buat Ujian Baru">
-        <form onSubmit={handleCreate} className="create-form">
+        <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: 4 }}>
           {error && <Alert type="error">{error}</Alert>}
-
-          <div className="form-group">
-            <label className="form-label">Judul Ujian</label>
-            <input className="neo-input" value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="UTS Matematika Semester 1" required />
-          </div>
-
-          <div className="grid-2">
+          <form onSubmit={handleCreate}>
             <div className="form-group">
-              <label className="form-label">Durasi (menit)</label>
-              <input className="neo-input" type="number" value={form.duration} onChange={e => updateForm('duration', e.target.value)} min={5} required />
+              <label className="form-label">Judul Ujian</label>
+              <input className="neo-input" value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="UTS Matematika..." required />
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Durasi (menit)</label>
+                <input className="neo-input" type="number" value={form.duration} onChange={e => updateForm('duration', e.target.value)} min={5} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">KKM (%)</label>
+                <input className="neo-input" type="number" value={form.passingScore} onChange={e => updateForm('passingScore', e.target.value)} min={0} max={100} required />
+              </div>
+            </div>
+            <div className="grid-2">
+              <div className="form-group">
+                <label className="form-label">Mulai</label>
+                <input className="neo-input" type="datetime-local" value={form.startAt} onChange={e => updateForm('startAt', e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Selesai</label>
+                <input className="neo-input" type="datetime-local" value={form.endAt} onChange={e => updateForm('endAt', e.target.value)} required />
+              </div>
             </div>
             <div className="form-group">
-              <label className="form-label">KKM (%)</label>
-              <input className="neo-input" type="number" value={form.passingScore} onChange={e => updateForm('passingScore', e.target.value)} min={0} max={100} required />
-            </div>
-          </div>
-
-          <div className="grid-2">
-            <div className="form-group">
-              <label className="form-label">Mulai</label>
-              <input className="neo-input" type="datetime-local" value={form.startAt} onChange={e => updateForm('startAt', e.target.value)} required />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Selesai</label>
-              <input className="neo-input" type="datetime-local" value={form.endAt} onChange={e => updateForm('endAt', e.target.value)} required />
-            </div>
-          </div>
-
-          {/* Kelas */}
-          <div className="form-group">
-            <label className="form-label">Kelas</label>
-            <div className="class-selection">
-              {classes.map(c => (
-                <label key={c._id} className="class-label">
-                  <input 
-                    type="checkbox"
-                    checked={form.classRoomIds.includes(c._id)}
-                    onChange={e => {
-                      updateForm('classRoomIds', e.target.checked
-                        ? [...form.classRoomIds, c._id]
-                        : form.classRoomIds.filter(x => x !== c._id))
-                    }} 
-                  />
-                  {c.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Questions Section */}
-          <div className="questions-section">
-            <div className="questions-header">
-              <p className="questions-title">Soal ({form.questions.length})</p>
-              <div className="add-buttons">
-                <button type="button" className="neo-btn neo-btn-dark" onClick={() => addQuestion('multiple_choice')}>
-                  + Pilihan Ganda
-                </button>
-                <button type="button" className="neo-btn neo-btn-ghost" onClick={() => addQuestion('essay')}>
-                  + Essay
-                </button>
+              <label className="form-label">Kelas</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, border: '2px solid var(--border)', borderRadius: 4, padding: 10 }}>
+                {classes.map(c => (
+                  <label key={c._id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+                    <input type="checkbox"
+                      checked={form.classRoomIds.includes(c._id)}
+                      onChange={e => {
+                        updateForm('classRoomIds', e.target.checked
+                          ? [...form.classRoomIds, c._id]
+                          : form.classRoomIds.filter(x => x !== c._id))
+                      }} />
+                    {c.name}
+                  </label>
+                ))}
               </div>
             </div>
 
-            <div className="questions-list">
+            {/* Questions */}
+            <div style={{ marginTop: 8, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <p style={{ fontWeight: 700, fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Soal ({form.questions.length})</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="neo-btn neo-btn-dark" onClick={() => addQuestion('multiple_choice')} style={{ padding: '5px 10px', fontSize: '0.72rem' }}>
+                    + Pilihan Ganda
+                  </button>
+                  <button type="button" className="neo-btn neo-btn-ghost" onClick={() => addQuestion('essay')} style={{ padding: '5px 10px', fontSize: '0.72rem' }}>
+                    + Essay
+                  </button>
+                </div>
+              </div>
               {form.questions.map((q, i) => (
-                <div key={i} className="question-card">
-                  <div className="question-header">
-                    <span className="question-type">
+                <div key={i} style={{ border: '2px solid var(--border)', borderRadius: 4, padding: 14, marginBottom: 12, background: 'var(--bg)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.78rem', background: q.type === 'essay' ? '#e0e0e0' : 'var(--accent-yellow)', border: '2px solid var(--border)', borderRadius: 2, padding: '3px 8px' }}>
                       {i + 1}. {q.type === 'essay' ? 'Essay' : 'Pilihan Ganda'}
                     </span>
-                    <button type="button" className="remove-btn" onClick={() => removeQuestion(i)}>
-                      <X size={18} />
+                    <button type="button" onClick={() => removeQuestion(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cc0000' }}>
+                      <X size={16} />
                     </button>
                   </div>
-
-                  <textarea 
-                    className="neo-input question-textarea" 
-                    rows={3} 
-                    placeholder="Tulis pertanyaan di sini..." 
-                    value={q.content}
-                    onChange={e => updateQuestion(i, 'content', e.target.value)} 
-                    required 
-                  />
-
-                  <div className="points-row">
-                    <label>Poin:</label>
-                    <input 
-                      className="neo-input" 
-                      type="number" 
-                      value={q.points} 
-                      min={1}
+                  <textarea className="neo-input" rows={2} placeholder="Pertanyaan..." value={q.content}
+                    onChange={e => updateQuestion(i, 'content', e.target.value)} required
+                    style={{ marginBottom: 8, fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>Poin:</label>
+                    <input className="neo-input" type="number" value={q.points} min={1}
                       onChange={e => updateQuestion(i, 'points', Number(e.target.value))}
-                      style={{ width: 80 }}
-                    />
+                      style={{ width: 70 }} />
                   </div>
-
                   {q.type === 'multiple_choice' && (
                     <>
                       {q.choices.map((c, ci) => (
-                        <div key={c.key} className="choice-row">
-                          <span className="choice-key">{c.key}</span>
-                          <input 
-                            className="neo-input" 
-                            placeholder={`Pilihan ${c.key}`} 
-                            value={c.text}
-                            onChange={e => updateChoice(i, ci, e.target.value)} 
-                          />
+                        <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                          <span style={{ width: 24, height: 24, border: '2px solid var(--border)', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.75rem', flexShrink: 0, background: 'var(--card)' }}>{c.key}</span>
+                          <input className="neo-input" placeholder={`Pilihan ${c.key}`} value={c.text}
+                            onChange={e => updateChoice(i, ci, e.target.value)} />
                         </div>
                       ))}
-                      <div className="correct-answer">
-                        <label>Jawaban Benar:</label>
-                        <select 
-                          className="neo-input" 
-                          value={q.correctKey} 
-                          onChange={e => updateQuestion(i, 'correctKey', e.target.value)}
-                          style={{ width: 100 }}
-                        >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>Jawaban Benar:</label>
+                        <select className="neo-input" value={q.correctKey} onChange={e => updateQuestion(i, 'correctKey', e.target.value)} style={{ width: 80 }}>
                           {q.choices.map(c => <option key={c.key} value={c.key}>{c.key}</option>)}
                         </select>
                       </div>
@@ -355,49 +299,54 @@ export default function AdminAssignments() {
                 </div>
               ))}
             </div>
-          </div>
 
-          <button type="submit" className="neo-btn neo-btn-primary submit-btn" disabled={saving}>
-            {saving ? 'Menyimpan...' : <><Plus size={18} /> Buat Ujian</>}
-          </button>
-        </form>
+            <button type="submit" className="neo-btn neo-btn-primary" disabled={saving} style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}>
+              {saving ? 'Menyimpan...' : <><Plus size={16} /> Buat Ujian</>}
+            </button>
+          </form>
+        </div>
       </Modal>
 
-      {/* ==================== REKAP MODAL ==================== */}
+      {/* Recap Modal */}
       <Modal open={!!recapModal} onClose={() => { setRecapModal(null); setRecap(null) }} title={`Rekap: ${recapModal?.title || ''}`}>
         {!recap ? <Loader /> : recap.error ? <Alert type="error">{recap.error}</Alert> : (
           <div>
-            <div className="stats-grid">
+            <div className="grid-3" style={{ marginBottom: 16 }}>
               {[
-                { label: 'Total Submission', value: recap.summary?.totalSubmissions ?? 0 },
+                { label: 'Submission', value: recap.summary?.totalSubmissions ?? 0 },
                 { label: 'Rata-rata', value: `${recap.summary?.averageScore ?? 0}%` },
                 { label: 'Lulus', value: `${recap.summary?.passRate ?? 0}%` },
-              ].map(({ label, value }, idx) => (
-                <div key={idx} className="stat-card">
-                  <div className="stat-value">{value}</div>
-                  <div className="stat-label">{label}</div>
+              ].map(({ label, value }) => (
+                <div key={label} className="neo-card" style={{ padding: '12px 16px', textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.4rem' }}>{value}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
                 </div>
               ))}
             </div>
-
-            <div className="submissions-list">
-              {(recap.submissions || []).map(s => (
-                <div key={s.submissionId} className="submission-item">
-                  <div>
-                    <div className="student-name">{s.student?.fullName}</div>
-                    <div className="student-class">{s.student?.classRoom?.name}</div>
-                  </div>
-                  <div className="score-section">
-                    <span className="percent-score">{s.percentScore}%</span>
-                    <span className={`status-badge ${s.isPassed ? 'pass' : 'fail'}`}>
-                      {s.isPassed ? '✓ LULUS' : '✗ GAGAL'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {(recap.submissions || []).length === 0 && (
-                <p className="no-submission">Belum ada siswa yang mengerjakan</p>
-              )}
+            <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+              <table className="neo-table striped">
+                <thead>
+                  <tr><th>Siswa</th><th>Kelas</th><th>Nilai</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  {(recap.submissions || []).map(s => (
+                    <tr key={s.submissionId}>
+                      <td style={{ fontWeight: 700 }}>{s.student?.fullName}</td>
+                      <td style={{ fontSize: '0.78rem' }}>{s.student?.classRoom?.name}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{s.percentScore}%</td>
+                      <td>
+                        <span style={{
+                          fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px',
+                          border: '2px solid var(--border)', borderRadius: 2,
+                          background: s.isPassed ? 'var(--accent-green)' : '#ffcccc',
+                        }}>
+                          {s.isPassed ? '✓ LULUS' : '✗ GAGAL'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
