@@ -204,7 +204,7 @@ export default function AdminAssignments() {
             border: '3px solid var(--border)',
             boxShadow: '8px 8px 0 var(--border)',
             borderRadius: 'var(--radius)',
-            padding: '24px',
+            padding: 'clamp(14px, 4vw, 24px)',
             width: '100%',
             maxWidth: '640px',
             maxHeight: '90vh',
@@ -227,7 +227,7 @@ export default function AdminAssignments() {
                   <input className="neo-input" value={form.title} onChange={e => updateForm('title', e.target.value)} placeholder="UTS Matematika..." required />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                <div className="form-grid-2">
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Durasi (menit)</label>
                     <input className="neo-input" type="number" value={form.duration} onChange={e => updateForm('duration', e.target.value)} min={5} required />
@@ -238,7 +238,7 @@ export default function AdminAssignments() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                <div className="form-grid-2">
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Mulai</label>
                     <input className="neo-input" type="datetime-local" value={form.startAt} onChange={e => updateForm('startAt', e.target.value)} required />
@@ -334,7 +334,7 @@ export default function AdminAssignments() {
       <Modal open={!!recapModal} onClose={() => { setRecapModal(null); setRecap(null) }} title={`Rekap: ${recapModal?.title || ''}`}>
         {!recap ? <Loader /> : recap.error ? <Alert type="error">{recap.error}</Alert> : (
           <div>
-            <div className="grid-3" style={{ marginBottom: 16 }}>
+            <div className="grid-3 recap-summary" style={{ marginBottom: 16 }}>
               {[
                 { label: 'Submission', value: recap.summary?.totalSubmissions ?? 0 },
                 { label: 'Rata-rata', value: `${recap.summary?.averageScore ?? 0}%` },
@@ -346,8 +346,8 @@ export default function AdminAssignments() {
                 </div>
               ))}
             </div>
-            <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-              <table className="neo-table striped">
+            <div style={{ maxHeight: 280, overflowY: 'auto', overflowX: 'auto' }}>
+              <table className="neo-table striped" style={{ minWidth: 320 }}>
                 <thead>
                   <tr><th>Siswa</th><th>Kelas</th><th>Nilai</th><th>Status</th></tr>
                 </thead>
