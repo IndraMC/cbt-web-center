@@ -661,3 +661,28 @@ html, body {
   border-radius: 2px;
   margin-bottom: 20px;
 }
+
+/* Form grid 2 col — stacks on mobile */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Recap summary — always 3 col on modal, but wrap nicely on very small screens */
+.recap-summary {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+@media (max-width: 400px) {
+  .recap-summary {
+    grid-template-columns: 1fr !important;
+  }
+}
